@@ -1,0 +1,16 @@
+body {
+  background-color: #333;
+}
+
+* {
+  color: white;
+  font-family: Verdana, sans-serif;
+}
+
+canvas#pong {
+  border: 2px solid #aaa;
+  background: #555;
+
+  border-bottom: 2px dotted #aaa;
+  border-top: 2px dotted #aaa;
+}
