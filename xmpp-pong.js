@@ -8,6 +8,9 @@ var Pong = {
 
     this.ball.init()
 
+    this.red_field = $doodle.rect({x: 0, y: 0, width: gWidth, height: gHeight * 0.4, fill: '#533', alpha: 0.5})
+    this.blue_field = $doodle.rect({x: 0, y: gHeight - (gHeight * 0.4), width: gWidth, height: gHeight * 0.4, fill: '#335', alpha: 0.5})
+
     /* angle is in radians, so:
      *   0    ==> east
      *   0.25 ==> south-east
@@ -26,11 +29,22 @@ var Pong = {
      *           |
      *          0.5
      */
-    this.ball.velocity = {speed: 5.0, angle: 0.75}
+    this.ball.velocity = {speed: 10.0, angle: 0.75}
+
+    this.blue_paddle = new Pong.Paddle()
+
+    $(window).mousemove(function (event) {
+      Pong.blue_paddle.avatar.modify({x: event.pageX - $('#pong').offset().left - Pong.blue_paddle.avatar.width/2.0})
+    })
 
     $doodle.animate(function() {
+      Pong.red_field.draw()
+      Pong.blue_field.draw()
+
       Pong.ball.go()
       Pong.ball.avatar.draw()
+
+      Pong.blue_paddle.avatar.draw()
     }, ''+gFPS+'fps')
     /*Pong.ball.go()*/
   }
@@ -65,7 +79,7 @@ Pong.ball = {
   },
 
   drop: function() {
-    this.velocity = {speed: 5.0, angle: Math.random() * 2.0}
+    this.velocity = {speed: 10.0, angle: Math.random() * 2.0}
     this.avatar.modify({x: gWidth / 2.0, y: gHeight / 2.0})
   },
 
@@ -78,10 +92,15 @@ Pong.ball = {
       case this.collides_with_left_wall():
         this.velocity.angle = 1 - this.velocity.angle
         break;
+      case this.collides_with_blue_paddle():
+        this.velocity.angle = -this.velocity.angle
+        break;
       case this.falls_off_bottom():
+        $('#red-score').text(parseInt($('#red-score').text()) + 1).show('puff')
         this.drop()
         break;
       case this.falls_off_top():
+        $('#blue-score').text(parseInt($('#blue-score').text()) + 1).show('puff')
         this.drop()
         break;
     }
@@ -95,6 +114,11 @@ Pong.ball = {
     return next.x - this.avatar.radius < 0
   },
 
+  collides_with_blue_paddle: function() {
+    return next.y > gHeight - Pong.blue_paddle.height - 2 &&
+      next.x > Pong.blue_paddle.avatar.x && next.x < Pong.blue_paddle.avatar.x + Pong.blue_paddle.avatar.width
+  },
+
   falls_off_bottom: function() {
     return next.y - this.avatar.radius > gHeight
   },
@@ -104,3 +128,10 @@ Pong.ball = {
   }
 }
 
+Pong.Paddle = function() {
+  this.width = 60
+  this.height = 8
+  this.colour = '#55f'
+  this.avatar = $doodle.rect({x: gWidth/2.0 - this.width/2.0, y: gHeight - this.height,
+    width: this.width, height: this.height, fill: this.colour})
+}

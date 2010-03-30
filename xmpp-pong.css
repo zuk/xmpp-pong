@@ -13,4 +13,26 @@ canvas#pong {
 
   border-bottom: 2px dotted #aaa;
   border-top: 2px dotted #aaa;
+
+  position: absolute;
+  left: 150px;
+  top: 30px;
+}
+
+#red-score {
+  font-size: 80px;
+  font-weight: bold;
+  color: #b22;
+  position: absolute;
+  left: 550px;
+  top: 12px;
+}
+
+#blue-score {
+  font-size: 80px;
+  font-weight: bold;
+  color: #55a;
+  position: absolute;
+  left: 550px;
+  top: 430px;
 }
