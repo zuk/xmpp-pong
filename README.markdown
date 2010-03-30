@@ -1,4 +1,4 @@
 XMPP Pong
 =========
 
-Intercontinental Pong FTW
+http://roughest.net/xmpp-pong
