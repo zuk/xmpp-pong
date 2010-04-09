@@ -2,6 +2,8 @@ var gWidth = 360
 var gHeight = 480
 var gFPS = 25
 
+var BOSH_SERVICE = '/http-bind'
+
 var Pong = {
   init: function() {
     $doodle.canvas('#pong')
@@ -37,6 +39,10 @@ var Pong = {
       Pong.blue_paddle.avatar.modify({x: event.pageX - $('#pong').offset().left - Pong.blue_paddle.avatar.width/2.0})
     })
 
+
+    Pong.xmpp.connect()
+
+    
     $doodle.animate(function() {
       Pong.red_field.draw()
       Pong.blue_field.draw()
@@ -79,7 +85,10 @@ Pong.ball = {
   },
 
   drop: function() {
-    this.velocity = {speed: 10.0, angle: Math.random() * 2.0}
+    do {
+      a = Math.random() * 2.0
+    } while (a < 0.2 || (a > 0.8 && a < 1.2) || a > 1.8)
+    this.velocity = {speed: 10.0, angle: a}
     this.avatar.modify({x: gWidth / 2.0, y: gHeight / 2.0})
   },
 
@@ -128,10 +137,50 @@ Pong.ball = {
   }
 }
 
+
 Pong.Paddle = function() {
   this.width = 60
   this.height = 8
   this.colour = '#55f'
   this.avatar = $doodle.rect({x: gWidth/2.0 - this.width/2.0, y: gHeight - this.height,
     width: this.width, height: this.height, fill: this.colour})
+}
+
+
+Pong.xmpp = {
+  connect: function() {
+    this.strophe = new Strophe.Connection(BOSH_SERVICE)
+    
+    this.strophe.xmlInput = function(data) {console.log($(data).children()[0])}
+    //this.strophe.xmlOutput = function(data) {console.log('SENT: '+data)}
+    
+    this.strophe.connect('blue@carbon', 'blueblue', function(status) {
+      if (status == Strophe.Status.CONNECTING) {
+        console.log('Strophe is connecting.');
+      } else if (status == Strophe.Status.CONNFAIL) {
+        console.log('Strophe failed to connect.');
+      } else if (status == Strophe.Status.DISCONNECTING) {
+        console.log('Strophe is disconnecting.');
+      } else if (status == Strophe.Status.DISCONNECTED) {
+        console.log('Strophe is disconnected.');
+      } else if (status == Strophe.Status.CONNECTED) {
+        console.log('Strophe is connected!')
+
+        this.strophe.addHandler(function(iq) {
+          console.log(iq)
+        }, null, "iq", null, "ping1")
+        
+        console.log("DOMAIN IS: "+Strophe.getDomainFromJid(this.strophe.jid))
+	
+        pres = $pres().c('status', "HERE!")
+        this.strophe.send(pres.tree())
+
+
+        msg = $msg({to: 'green@carbon', from: 'blue@carbon', type: 'chat'})
+          .cnode("I'm here!")
+        this.strophe.send(msg.tree())
+
+      }
+    })
+  }
 }
