@@ -2,7 +2,7 @@ var gWidth = 360
 var gHeight = 480
 var gFPS = 25
 
-var BOSH_SERVICE = '/http-bind'
+var BOSH_SERVICE = '/http-bind/'
 
 var Pong = {
   init: function() {
@@ -42,7 +42,7 @@ var Pong = {
 
     Pong.xmpp.connect()
 
-    
+
     $doodle.animate(function() {
       Pong.red_field.draw()
       Pong.blue_field.draw()
@@ -51,7 +51,7 @@ var Pong = {
       Pong.ball.avatar.draw()
 
       Pong.blue_paddle.avatar.draw()
-    }, ''+gFPS+'fps')
+      }, ''+gFPS+'fps')
     /*Pong.ball.go()*/
   }
 }
@@ -150,13 +150,15 @@ Pong.Paddle = function() {
 Pong.xmpp = {
   connect: function() {
     this.strophe = new Strophe.Connection(BOSH_SERVICE)
-    
+
     this.strophe.xmlInput = function(data) {console.log($(data).children()[0])}
-    //this.strophe.xmlOutput = function(data) {console.log('SENT: '+data)}
-    
-    this.strophe.connect('blue@carbon', 'blueblue', function(status) {
+    this.strophe.xmlOutput = function(data) {console.log(data)}
+
+    this.strophe.connect('ubu', null, function(status) {
       if (status == Strophe.Status.CONNECTING) {
         console.log('Strophe is connecting.');
+      } else if (status == Strophe.Status.AUTHENTICATING) {
+        console.log('Strophe is authenticating.');
       } else if (status == Strophe.Status.CONNFAIL) {
         console.log('Strophe failed to connect.');
       } else if (status == Strophe.Status.DISCONNECTING) {
@@ -166,19 +168,48 @@ Pong.xmpp = {
       } else if (status == Strophe.Status.CONNECTED) {
         console.log('Strophe is connected!')
 
-        this.strophe.addHandler(function(iq) {
-          console.log(iq)
-        }, null, "iq", null, "ping1")
-        
-        console.log("DOMAIN IS: "+Strophe.getDomainFromJid(this.strophe.jid))
-	
-        pres = $pres().c('status', "HERE!")
-        this.strophe.send(pres.tree())
+
+        setInterval(function() {
+          id = new Date().getTime()
+          ping = $iq({to: 'ubu', type: 'get', id: 'ping'+id}).c("ping", {xmlns: "urn:xmpp:ping"})
+          Pong.xmpp.strophe.send(ping)
+        }, 10000)
+
+        this.addHandler(function(iq) {
+          console.log("PONG")
+        }, null, "iq")
+
+        console.log("DOMAIN IS: "+Strophe.getDomainFromJid(this.jid))
+
+        this.send(
+          $pres()
+        )
 
 
-        msg = $msg({to: 'green@carbon', from: 'blue@carbon', type: 'chat'})
-          .cnode("I'm here!")
-        this.strophe.send(msg.tree())
+        //console.log(this.strophe.jid)
+        $('#blue-user').text(this.jid)
+
+
+        this.send(
+          $iq({type: 'get', id: 'roster1'}).c("query", {xmlns: "jabber:iq:roster"})
+        )
+
+        //this.send(
+        //  $iq({type: 'get', id: 'reg1'}).c("query", {xmlns: "jabber:iq:register"})
+        //)
+
+        //this.send(
+        //  $iq({to: 'ubu', type: 'get', id: 'disco1'})
+        //    .c("query", {xmlns: "http://jabber.org/protocol/disco#info"})
+        //)
+
+        //pres = $pres().c('status', "HERE!")
+        //this.strophe.send(pres.tree())
+
+
+        //msg = $msg({to: 'green@carbon', from: 'blue@carbon', type: 'chat'})
+        //  .cnode("I'm here!")
+        //this.strophe.send(msg.tree())
 
       }
     })
