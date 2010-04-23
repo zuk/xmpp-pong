@@ -40,7 +40,7 @@ var Pong = {
     })
 
 
-    Pong.xmpp.connect()
+    Pong.xmpp.connect('carbon', null)
 
 
     $doodle.animate(function() {
@@ -148,13 +148,13 @@ Pong.Paddle = function() {
 
 
 Pong.xmpp = {
-  connect: function() {
-    this.strophe = new Strophe.Connection(BOSH_SERVICE)
+  connect: function(username, password) {
+    this.connection = new Strophe.Connection(BOSH_SERVICE)
 
-    this.strophe.xmlInput = function(data) {console.log($(data).children()[0])}
-    this.strophe.xmlOutput = function(data) {console.log(data)}
+    this.connection.xmlInput = function(data) {console.log($(data).children()[0])}
+    this.connection.xmlOutput = function(data) {console.log(data)}
 
-    this.strophe.connect('ubu', null, function(status) {
+    this.connection.connect(username, password, function(status) {
       if (status == Strophe.Status.CONNECTING) {
         console.log('Strophe is connecting.');
       } else if (status == Strophe.Status.AUTHENTICATING) {
@@ -171,8 +171,8 @@ Pong.xmpp = {
 
         setInterval(function() {
           id = new Date().getTime()
-          ping = $iq({to: 'ubu', type: 'get', id: 'ping'+id}).c("ping", {xmlns: "urn:xmpp:ping"})
-          Pong.xmpp.strophe.send(ping)
+          ping = $iq({to: 'carbon', type: 'get', id: 'ping'+id}).c("ping", {xmlns: "urn:xmpp:ping"})
+          Pong.xmpp.connection.send(ping)
         }, 10000)
 
         this.addHandler(function(iq) {
@@ -181,17 +181,25 @@ Pong.xmpp = {
 
         console.log("DOMAIN IS: "+Strophe.getDomainFromJid(this.jid))
 
-        this.send(
-          $pres()
-        )
+        
 
 
-        //console.log(this.strophe.jid)
+        //console.log(this.connection.jid)
         $('#blue-user').text(this.jid)
 
 
-        this.send(
-          $iq({type: 'get', id: 'roster1'}).c("query", {xmlns: "jabber:iq:roster"})
+        /*this.sendIQ(
+          $iq({type: 'get', id: 'roster1'}).c("query", {xmlns: "jabber:iq:roster"}),
+          function() {
+            Pong.xmpp.connection.send($pres())
+          }
+        )*/
+
+        this.sendIQ(
+          $iq({type: 'set', id: 'create1'}).c("pubsub", {xmlns: "http://jabber.org/protocol/pubsub"}).c("create", {node: "pong"}),
+          function(iq) {
+            console.log(iq)
+          }
         )
 
         //this.send(
@@ -199,17 +207,17 @@ Pong.xmpp = {
         //)
 
         //this.send(
-        //  $iq({to: 'ubu', type: 'get', id: 'disco1'})
+        //  $iq({to: 'carbon', type: 'get', id: 'disco1'})
         //    .c("query", {xmlns: "http://jabber.org/protocol/disco#info"})
         //)
 
         //pres = $pres().c('status', "HERE!")
-        //this.strophe.send(pres.tree())
+        //this.connection.send(pres.tree())
 
 
         //msg = $msg({to: 'green@carbon', from: 'blue@carbon', type: 'chat'})
         //  .cnode("I'm here!")
-        //this.strophe.send(msg.tree())
+        //this.connection.send(msg.tree())
 
       }
     })
