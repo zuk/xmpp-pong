@@ -110,6 +110,11 @@ Pong.Client.prototype.onPresence = function(pres) {
     li.css('color', '#b22')
     $('#red').text(nick)
     $('#red-play').hide()
+    if (from == room+'/'+this.nickname) {
+      Pong.start(Pong.red_paddle)
+    }
+  } else {
+    if (!Pong.started) Pong.start()
   }
 }
 
@@ -119,9 +124,16 @@ Pong.Client.prototype.onGroupchatMessage = function(msg) {
   nick = Strophe.getResourceFromJid(from)
 
   if ($(msg).find('x[xmlns="jabber:x:delay"]').length > 0) {
-    console.log("{"+nick+"}"+$(msg).find('body').text())
+    // ignore past pos messages
   } else {
-    console.log("["+nick+"] "+$(msg).find('body').text())
+    x = $(msg).find('pos').text()
+    c = $(msg).find('pos').attr('paddle')
+    if (c == 'blue')
+      p = Pong.blue_paddle
+    else
+      p = Pong.red_paddle
+
+    if (p != Pong.as_paddle) p.avatar.modify({x: x})
   }
 }
 

@@ -6,6 +6,7 @@ var BOSH_SERVICE = '/http-bind/'
 
 var Pong = {
   init: function() {
+    this.started = false
     $doodle.canvas('#pong')
 
     this.red_field = $doodle.rect({x: 0, y: 0, width: gWidth, height: gHeight * 0.4, fill: '#533', alpha: 0.5})
@@ -31,24 +32,34 @@ var Pong = {
      */
     this.ball.velocity = {speed: 10.0, angle: 0.75}
 
-    this.blue_paddle = new Pong.Paddle()
-    this.red_paddle = new Pong.Paddle()
+    this.blue_paddle = new Pong.Paddle('blue')
+    this.red_paddle = new Pong.Paddle('red')
 
     Pong.red_field.draw()
     Pong.blue_field.draw()
 
     Pong.client = new Pong.Client()
-    Pong.client.connect('carbon',null)
+    Pong.client.connect('ubu',null)
     
   },
 
   start: function(as_paddle) {
-    $(window).mousemove(function (event) {
-      x = event.pageX - $('#pong').offset().left - Pong.blue_paddle.avatar.width/2.0
-      as_paddle.avatar.modify({x: x})
-      msg = $msg({to: Strophe.getBareJidFromJid(Pong.client.pongJid), type: 'groupchat'}).c('body', ""+x)
-      Pong.client.connection.send(msg.tree())
-    })
+    if (as_paddle) {
+      if (as_paddle == Pong.blue_paddle)
+        paddle_colour = 'blue'
+      else
+        paddle_colour = 'red'
+
+      $(window).mousemove(function (event) {
+        x = event.pageX - $('#pong').offset().left - Pong.blue_paddle.avatar.width/2.0
+        as_paddle.avatar.modify({x: x})
+        msg = $msg({to: Strophe.getBareJidFromJid(Pong.client.pongJid), type: 'groupchat'}).
+          c('body').
+          c('pos',{paddle: paddle_colour}).
+          t(''+x)
+        Pong.client.connection.send(msg.tree())
+      })
+    }
 
     //this.ball.init()
 
@@ -59,8 +70,11 @@ var Pong = {
       //Pong.ball.go()
       //Pong.ball.avatar.draw()
 
-      as_paddle.avatar.draw()
+      Pong.blue_paddle.avatar.draw()
+      Pong.red_paddle.avatar.draw()
     }, ''+gFPS+'fps')
+
+    this.started = true
   }
 }
 
@@ -146,11 +160,18 @@ Pong.ball = {
 }
 
 
-Pong.Paddle = function() {
+Pong.Paddle = function(colour) {
   this.width = 60
   this.height = 8
-  this.colour = '#55f'
-  this.avatar = $doodle.rect({x: gWidth/2.0 - this.width/2.0, y: gHeight - this.height,
-    width: this.width, height: this.height, fill: this.colour})
+
+  if (colour == 'blue') {
+    this.colour = '#55f'
+    this.avatar = $doodle.rect({x: gWidth/2.0 - this.width/2.0, y: gHeight - this.height,
+      width: this.width, height: this.height, fill: this.colour})
+  } else {
+    this.colour = '#f55'
+    this.avatar = $doodle.rect({x: gWidth/2.0 - this.width/2.0, y: this.height,
+      width: this.width, height: this.height, fill: this.colour})
+  }
 }
 
