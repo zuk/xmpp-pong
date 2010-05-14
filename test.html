@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <script type="text/javascript" src="lib/jquery-1.4.2.js"></script>
+    <script type="text/javascript" src="lib/jquery-ui-1.8.custom.min.js"></script>
+    <script type="text/javascript" src="lib/strophejs-1.0.1.js"></script>
+
+    <script type="text/javascript" src="lib/doodle-0.1.1.js"></script>
+
+    <script type="text/javascript" src="xmpp-test.js"></script>
+
+    <style>
+      * { 
+        color: white;
+        font-family: monospace;
+      }
+
+      button {
+        background-color: #444;
+      }
+      
+      body {
+        background: #020;
+      }
+      
+      #alpha {
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        width: 45%;
+        border: 2px solid #aaa;
+        padding: 4px;
+      }
+
+      #beta {
+        position: absolute;
+        left: 50%;
+        top: 0px;
+        width: 45%;
+        border: 2px solid #aaa;
+        padding: 4px;
+      }
+
+      p {
+        margin: 0;
+      }      
+    </style>
+  </head>
+
+
+  <body>
+    <script type="text/javascript">
+      var alpha
+      var beta
+
+      $(document).ready(function() {
+        alpha = new Client($('#alpha'))
+        beta = new Client($('#beta'))
+        
+        $('#alpha > .connect').click(function() {
+          alpha.connect('carbon', null)
+        })
+        
+        $('#beta > .connect').click(function() {
+          beta.connect('carbon', null)
+        })
+
+        $('#alpha > .subscribe').click(function() {
+          alpha.subscribe($('#beta .jid').text())
+        })
+        
+        $('#beta > .subscribe').click(function() {
+          beta.subscribe($('#alpha .jid').text())
+        })
+
+      })
+    </script>
+
+    <div id="alpha">
+      <div class="jid"></div>
+      <button class="connect">Connect</button>
+      <button class="subscribe">Subscribe</button>
+    </div>
+    <div id="beta">
+      <div class="jid"></div>
+      <button class="connect">Connect</button>
+      <button class="subscribe">Subscribe</button>
+    </div>
+  </body>
+</html>
