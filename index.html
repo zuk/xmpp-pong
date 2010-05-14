@@ -10,7 +10,9 @@
 
     <script type="text/javascript" src="lib/doodle-0.1.1.js"></script>
 
+    
     <script type="text/javascript" src="xmpp-pong.js"></script>
+    <script type="text/javascript" src="xmpp-pong-client.js"></script>
 
     <link rel="stylesheet" type="text/css" href="xmpp-pong.css" />
   </head>
@@ -29,10 +31,18 @@
       <p>YOUR BROWSER IS TOO ANCIENT TO RUN THIS!</p>
     </canvas>
 
-    <div id="red-user"><em style="color: #aaa; font-weight: normal">waiting...</em></div>
-    <div id="blue-user"><em style="color: #aaa; font-weight: normal">waiting...</em></div>
+    <div id="red"><em style="color: #aaa; font-weight: normal">waiting...</em></div>
+    <div id="blue"><em style="color: #aaa; font-weight: normal">waiting...</em></div>
     <div id="red-score">0</div>
     <div id="blue-score">0</div>
 
+    <div id="userlist-box">
+      <h2>userlist</h2>
+      <ul id="userlist">
+      </ul>
+    </div>
+
+    <button id="red-play">Play as Red</button>
+    <button id="blue-play">Play as Blue</button>
   </body>
 </html>
